@@ -1,0 +1,229 @@
+import { useRef, useState, useEffect } from "react";
+import { Volume2, VolumeX } from 'lucide-react';
+
+const AudioPlayerCircle = () => {
+    const audioRef = useRef<HTMLAudioElement>(null);
+    const svgRef = useRef<SVGSVGElement>(null);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [progress, setProgress] = useState(0);
+    const [duration, setDuration] = useState(0);
+    const [isDragging, setIsDragging] = useState(false);
+    const [volume, setVolume] = useState(0.5);
+    const sliderRef = useRef<HTMLInputElement>(null);
+    const buttonRef = useRef<HTMLButtonElement>(null);
+
+    const radius = 45;
+    const center = 50;
+    const circumference = 2 * Math.PI * radius;
+
+    // Update progress bar and handle time update
+    const updateProgress = () => {
+        if (!audioRef.current || isDragging) return;
+        const current = audioRef.current.currentTime;
+        const dur = audioRef.current.duration;
+        if (dur > 0) {
+            setProgress((current / dur) * 100);
+            setDuration(dur);
+        }
+    };
+
+    // Seek the audio based on mouse position
+    const seekAudio = (clientX: number, clientY: number) => {
+        if (!svgRef.current || !audioRef.current) return;
+        const rect = svgRef.current.getBoundingClientRect();
+        const x = clientX - rect.left;
+        const y = clientY - rect.top;
+        const dx = x - center;
+        const dy = y - center;
+
+        let theta = Math.atan2(dy, dx);
+        theta -= Math.PI / 2;
+        if (theta < 0) theta += 2 * Math.PI;
+
+        const percent = (theta / (2 * Math.PI)) * 100;
+        setProgress(percent);
+        const newTime = (percent / 100) * duration;
+        audioRef.current.currentTime = newTime;
+    };
+
+    // When mouse is down, start dragging and seek the audio
+    const handleMouseDown = (e: React.MouseEvent) => {
+        e.preventDefault();
+        setIsDragging(true);
+        seekAudio(e.clientX, e.clientY);
+    };
+
+    // While dragging, keep updating the time
+    const handleMouseMove = (e: MouseEvent) => {
+        if (isDragging) {
+            seekAudio(e.clientX, e.clientY);
+        }
+    };
+
+    // When mouse is up, stop dragging
+    const handleMouseUp = () => {
+        setIsDragging(false);
+    };
+
+    // Toggle play/pause based on the current state
+    const togglePlay = () => {
+        if (!audioRef.current) return;
+        if (isPlaying) {
+            audioRef.current.pause();
+        } else {
+            audioRef.current.play();
+        }
+        setIsPlaying(!isPlaying);
+    };
+
+    // Prevent toggling play/pause when dragging progress
+    const handleClick = (e: React.MouseEvent) => {
+        if (!isDragging) {
+            togglePlay();
+        }
+    };
+
+    // Format time (minutes:seconds)
+    const formatTime = (time: number) => {
+        const minutes = Math.floor(time / 60);
+        const seconds = Math.floor(time % 60);
+        return `${minutes}:${seconds < 10 ? "0" + seconds : seconds}`;
+    };
+    // Handle volume change
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const inputVal = parseFloat(e.target.value);
+        setVolume(inputVal);
+        if (audioRef.current) {
+            audioRef.current.volume = inputVal;
+        }
+    };
+
+    // Effect for volume change background update
+    useEffect(() => {
+        const slider = sliderRef.current;
+        if (slider) {
+            const percent = volume * 100;
+            slider.style.background = `linear-gradient(to right, white ${percent}%, #888 ${percent}%)`;
+        }
+    }, [volume]);
+
+    // Add event listeners to update progress
+    useEffect(() => {
+        const audio = audioRef.current;
+        if (!audio) return;
+
+        audio.addEventListener("timeupdate", updateProgress);
+        audio.addEventListener("loadedmetadata", () => {
+            setDuration(audio.duration);
+        });
+        audio.addEventListener("ended", () => setIsPlaying(false));
+
+        return () => {
+            audio.removeEventListener("timeupdate", updateProgress);
+            audio.removeEventListener("loadedmetadata", () => { });
+            audio.removeEventListener("ended", () => setIsPlaying(false));
+        };
+    }, [isDragging]);
+
+    // Event listeners for mouse move and mouse up
+    useEffect(() => {
+        window.addEventListener("mousemove", handleMouseMove);
+        window.addEventListener("mouseup", handleMouseUp);
+        return () => {
+            window.removeEventListener("mousemove", handleMouseMove);
+            window.removeEventListener("mouseup", handleMouseUp);
+        };
+    }, [isDragging]);
+
+    // Update audio volume based on state
+    useEffect(() => {
+        if (audioRef.current) {
+            audioRef.current.volume = volume;
+        }
+    }, [volume]);
+
+    return (
+        <div className="w-full flex flex-col items-center justify-center p-4">
+            <p className="text-gray-300 text-lg font-semibold">
+                {formatTime(audioRef.current ? audioRef.current.currentTime : 0)}
+            </p>
+
+            <div className="relative w-60 h-60">
+                {isPlaying && (
+                    <>
+                        <div className="pulse-circle"></div>
+                        <div className="pulse-circle" style={{ animationDelay: "0.2s" }}></div>
+                        <div className="pulse-circle" style={{ animationDelay: "0.6s" }}></div>
+                        <div className="pulse-circle" style={{ animationDelay: "0.8s" }}></div>
+                    </>
+                )}
+
+                <svg
+                    ref={svgRef}
+                    className="absolute top-0 left-0 w-full h-full"
+                    viewBox="0 0 100 100"
+                    onMouseDown={handleMouseDown}
+                    onClick={handleClick}
+                >
+                    <circle
+                        cx={center}
+                        cy={center}
+                        r={radius}
+                        stroke="white"
+                        strokeWidth="0.8"
+                        fill="none"
+                    />
+                    <circle
+                        cx={center}
+                        cy={center}
+                        r={radius}
+                        stroke="white"
+                        strokeWidth="1.5"
+                        fill="none"
+                        strokeDasharray={circumference}
+                        strokeDashoffset={circumference - (progress / 100) * circumference}
+                        strokeLinecap="round"
+                        style={{
+                            transition: isDragging ? "none" : "stroke-dashoffset 0.1s linear",
+                            transform: "rotate(-90deg)",
+                            transformOrigin: "50% 50%",
+                        }}
+                    />
+                    <circle cx={center + radius * Math.cos((progress / 100) * 2 * Math.PI - Math.PI / 2)} cy={center + radius * Math.sin((progress / 100) * 2 * Math.PI - Math.PI / 2)} r="2" fill="white" stroke="white" strokeWidth="2" />
+                </svg>
+
+                <button
+                    ref={buttonRef}
+                    onClick={togglePlay}
+                    className="absolute inset-0 flex items-center justify-center rounded-full bg-transparent"
+                >
+                    {isPlaying ? (
+                        <VolumeX className="w-20 h-20 text-white" />
+                    ) : (
+                        <Volume2 className="w-20 h-20 text-white" />
+                    )}
+                </button>
+            </div>
+
+            <div className="w-full flex flex-row items-center justify-center">
+                <Volume2 color="white" size={30} className="m-2" />
+
+                <input
+                    ref={sliderRef}
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    value={volume}
+                    onChange={handleChange}
+                    className="w-full h-1 rounded-lg appearance-none bg-gray-400 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
+                />
+                <VolumeX color="gray" size={30} className="m-2" />
+            </div>
+
+            <audio ref={audioRef} src="/sounds/daryapanahi.mp3" preload="metadata" />
+        </div>
+    );
+};
+
+export default AudioPlayerCircle;

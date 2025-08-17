@@ -1,0 +1,50 @@
+
+import type { MetadataRoute } from 'next'
+ 
+export default function manifest(): MetadataRoute.Manifest {
+  return {
+    name: "Lahze",
+    short_name: "Lahze",
+    description: "لورم ایپسوم ...........",
+    start_url: '/',
+    display: 'standalone',
+    background_color: "#303841",
+    theme_color: "#002868",
+    icons: [
+      {
+        src: "assert/72-72.png",
+        type: "image/png", 
+        sizes: "72x72"
+      },
+      {
+        src: "assert/96-96.png",
+        type: "image/png", sizes: "96x96"
+      },
+      {
+        src: "assert/128-128.png",
+        type: "image/png",sizes: "128x128"
+      },
+      {
+       src: "assert/144-144.png",
+        type: "image/png", sizes: "144x144"
+      },
+      {
+        src: "assert/152-152.png",
+        type: "image/png", sizes: "152x152"
+      },
+      {
+        src: "assert/192-192.png",
+        type: "image/png", sizes: "192x192"
+      },
+      {
+        src: "assert/384-384.png",
+        type: "image/png", sizes: "384x384"
+      },
+      {
+        src: "assert/512-512.png",
+        type: "image/png", sizes: "512x512"
+      }
+    
+    ],
+  }
+}

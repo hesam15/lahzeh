@@ -1,0 +1,19 @@
+/* styles.css */
+.slider {
+    -webkit-appearance: none; /* حذف استایل پیش‌فرض در Safari */
+    width: 100%; /* عرض نوار لغزنده */
+    height: 8px; /* ارتفاع نوار لغزنده */
+    background: #d79a9a; /* رنگ پس‌زمینه */
+    border-radius: 5px; /* گوشه‌های گرد */
+    outline: none; /* حذف حاشیه */
+  }
+  
+  .slider::-webkit-slider-thumb {
+    -webkit-appearance: none; /* حذف استایل پیش‌فرض در Safari */
+    appearance: none; /* حذف استایل پیش‌فرض در دیگر مرورگرها */
+    width: 20px; /* عرض دکمه */
+    height: 20px; /* ارتفاع دکمه */
+    background: #8b4caf; /* رنگ دکمه */
+    border-radius: 50%; /* گرد کردن دکمه */
+    cursor: pointer; /* تغییر نشانگر ماوس */
+  }

@@ -1,0 +1,43 @@
+{
+  "name": "Lahze",
+  "short_name": "Lahze",
+  "start_url": "index.php",
+  "display": "standalone",
+  "background_color": "#303841",
+  "theme_color": "#002868",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "asset72-72.png",
+      "type": "image/png", "sizes": "72x72"
+    },
+    {
+      "src": "assets/img/icon/96-96.png",
+      "type": "image/png", "sizes": "96x96"
+    },
+    {
+      "src": "assets/img/icon/128-128.png",
+      "type": "image/png","sizes": "128x128"
+    },
+    {
+      "src": "assets/img/icon/144-144.png",
+      "type": "image/png", "sizes": "144x144"
+    },
+    {
+      "src": "assets/img/icon/152-152.png",
+      "type": "image/png", "sizes": "152x152"
+    },
+    {
+      "src": "assets/img/icon/192-192.png",
+      "type": "image/png", "sizes": "192x192"
+    },
+    {
+      "src": "assets/img/icon/384-384.png",
+      "type": "image/png", "sizes": "384x384"
+    },
+    {
+      "src": "assets/img/icon/512-512.png",
+      "type": "image/png", "sizes": "512x512"
+    }
+  ]
+}

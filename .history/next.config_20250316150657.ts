@@ -1,0 +1,21 @@
+// next.config.js
+import withPWA from "next-pwa";
+
+const nextConfig = {
+  reactStrictMode: true, // این باید در سطح بالای پیکربندی باشد
+  // سایر گزینه‌های پیکربندی Next.js می‌توانند در اینجا اضافه شوند
+};
+
+const pwaConfig = {
+  dest: "public",
+  register: true,
+  skipWaiting: true,
+  disable: process.env.NODE_ENV === "development",
+  buildExcludes: [/middleware-manifest.json$/],
+  // می‌توانید گزینه‌های دیگر PWA را نیز در اینجا اضافه کنید
+};
+
+export default withPWA({
+  ...nextConfig,
+  pwa: pwaConfig,
+});

@@ -1,0 +1,29 @@
+
+/* مرکزیت و اندازه‌گیری لودر */
+.loaderContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* تمام صفحه */
+  }
+  
+  /* دایره چرخان */
+  .loader {
+    border: 5px solid #f3f3f3; /* رنگ پس‌زمینه */
+    border-top: 2px dashed #3498db; /* رنگ قسمت چرخان */
+    border-radius: 50%; /* دایره شدن */
+    width: 50px; /* اندازه دایره */
+    height: 50px; /* اندازه دایره */
+    animation: spin 2s linear infinite; /* انیمیشن چرخش */
+  }
+  
+  /* انیمیشن چرخش */
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+  

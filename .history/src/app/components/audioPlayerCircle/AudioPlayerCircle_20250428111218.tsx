@@ -1,0 +1,182 @@
+"use client";
+
+import { useRef, useState, useEffect } from "react";
+
+const AudioPlayerCircle = () => {
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+
+  const radius = 45;
+  const circumference = 2 * Math.PI * radius;
+  const centerX = 50;
+  const centerY = 50;
+
+  const togglePlay = () => {
+    if (!audioRef.current) return;
+    if (isPlaying) {
+      audioRef.current.pause();
+    } else {
+      audioRef.current.play();
+    }
+    setIsPlaying(!isPlaying);
+  };
+
+  const updateProgress = () => {
+    if (!audioRef.current) return;
+    if (!isDragging) { // موقع درگ کاربر مقدار پیشرفت را تغییر نده
+      const current = audioRef.current.currentTime;
+      const dur = audioRef.current.duration;
+      setProgress((current / dur) * 100);
+      setDuration(dur);
+    }
+  };
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    audio.addEventListener("timeupdate", updateProgress);
+    audio.addEventListener("loadedmetadata", () => {
+      if (audio.duration) setDuration(audio.duration);
+    });
+    audio.addEventListener("ended", () => setIsPlaying(false));
+
+    return () => {
+      audio.removeEventListener("timeupdate", updateProgress);
+      audio.removeEventListener("loadedmetadata", () => {});
+      audio.removeEventListener("ended", () => setIsPlaying(false));
+    };
+  }, [isDragging]);
+
+  // محاسبه موقعیت مارکر
+  const angle = (progress / 100) * 360 - 90; // شروع از ساعت 12
+  const radian = (angle * Math.PI) / 180;
+  const markerX = centerX + radius * Math.cos(radian);
+  const markerY = centerY + radius * Math.sin(radian);
+
+  const calculateProgressFromPosition = (clientX: number, clientY: number) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const svgX = clientX - rect.left;
+    const svgY = clientY - rect.top;
+
+    const dx = svgX - centerX;
+    const dy = svgY - centerY;
+
+    let theta = Math.atan2(dy, dx); // -PI تا PI
+    theta += Math.PI / 2; // تغییر مبدا به بالا
+    if (theta < 0) {
+      theta += 2 * Math.PI;
+    }
+
+    const percent = (theta / (2 * Math.PI)) * 100;
+    return percent;
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true);
+    const percent = calculateProgressFromPosition(e.clientX, e.clientY);
+    if (percent != null) {
+      updateAudioProgress(percent);
+    }
+  };
+
+  const handleMouseMove = (e: MouseEvent) => {
+    if (isDragging) {
+      const percent = calculateProgressFromPosition(e.clientX, e.clientY);
+      if (percent != null) {
+        updateAudioProgress(percent);
+      }
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const updateAudioProgress = (percent: number) => {
+    if (!audioRef.current) return;
+    setProgress(percent);
+    const newTime = (percent / 100) * duration;
+    audioRef.current.currentTime = newTime;
+  };
+
+  useEffect(() => {
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isDragging, duration]);
+
+  return (
+    <div className="flex flex-col items-center justify-center p-4">
+      <div ref={containerRef} className="relative w-32 h-32">
+        <svg
+          className="absolute top-0 left-0 w-full h-full"
+          viewBox="0 0 100 100"
+          onMouseDown={handleMouseDown}
+        >
+          {/* دایره پس زمینه */}
+          <circle
+            className="text-gray-300"
+            stroke="currentColor"
+            strokeWidth="2"
+            fill="transparent"
+            r={radius}
+            cx={centerX}
+            cy={centerY}
+          />
+          {/* پراگرس */}
+          <circle
+            className="text-blue-500"
+            stroke="currentColor"
+            strokeWidth="4"
+            fill="transparent"
+            r={radius}
+            cx={centerX}
+            cy={centerY}
+            strokeDasharray={circumference}
+            strokeDashoffset={circumference - (progress / 100) * circumference}
+            strokeLinecap="round"
+            style={{ transition: isDragging ? "none" : "stroke-dashoffset 0.1s linear" }}
+          />
+          {/* مارکر */}
+          <circle
+            cx={markerX}
+            cy={markerY}
+            r="5"
+            fill="white"
+            stroke="blue"
+            strokeWidth="2"
+          />
+        </svg>
+        {/* دکمه پلی/پاز */}
+        <button
+          onClick={togglePlay}
+          className="absolute inset-0 flex items-center justify-center rounded-full"
+        >
+          {isPlaying ? (
+            <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+            </svg>
+          ) : (
+            <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+          )}
+        </button>
+      </div>
+
+      {/* پلیر صوتی */}
+      <audio ref={audioRef} src="/sounds/daryapanahi.mp3" preload="metadata" />
+    </div>
+  );
+};
+
+export default AudioPlayerCircle;
