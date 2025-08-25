@@ -21,12 +21,7 @@ import { getAuth, RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult }
 
 // Firebase config
 const firebaseConfig = {
-  apiKey: "AIzaSyBR-qqolkE6QL_TQH4_2wVmbrU7-SqXr0w",
-  authDomain: "lahzeh-bdef8.firebaseapp.com",
-  projectId: "lahzeh-bdef8",
-  storageBucket: "lahzeh-bdef8.firebasestorage.app",
-  messagingSenderId: "520126430900",
-  appId: "1:520126430900:web:b2f9642ccb0165602921e1"
+
 };
 
 const firebaseApp = initializeApp(firebaseConfig);
